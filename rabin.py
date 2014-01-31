@@ -1,4 +1,3 @@
-# 2014.01.31 16:04:30 EST
 """
 rabin.py
 
@@ -105,7 +104,3 @@ if __name__ == '__main__':
      total_bytes_read,
      '   Total Bytes In Blocks:',
      total_bytes_in_blocks)
-
-+++ okay decompyling rabin.pyc 
-# decompiled 1 files: 1 okay, 0 failed, 0 verify failed
-# 2014.01.31 16:04:31 EST

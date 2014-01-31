@@ -1,5 +1,3 @@
-# 2014.01.31 16:04:43 EST
-
 def mod(n, d):
     k = d.bit_length() - 1
     d <<= 63 - k
@@ -40,8 +38,3 @@ def mult(x, y):
 def mmult(x, y, d):
     return mod(mult(x, y), d)
 
-
-
-+++ okay decompyling polymath.pyc 
-# decompiled 1 files: 1 okay, 0 failed, 0 verify failed
-# 2014.01.31 16:04:43 EST
