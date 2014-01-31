@@ -193,7 +193,7 @@ class FileBlocks:
       if self.fd.tell() != block[2]:
         self.fd.seek(block[2], os.SEEK_SET)
       data = self.fd.read(block[1])
-      response = requests.post(url, params=params, data=data, headers=hdrs)
+      response = requests.put(url, params=params, data=data, headers=hdrs)
       print (response.status_code)
 
 
@@ -246,8 +246,8 @@ def main():
     backup.Run()
 
     # Restorethe File.
-    restore = Restore(sys.argv[2]+".restore")
-    restore.Run()
+    #restore = Restore(sys.argv[2]+".restore")
+    #restore.Run()
   except Exception, e:
     print ("Exception: ", e)
   
