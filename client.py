@@ -45,19 +45,29 @@ class Configuration:
   def GetVaultId(self):
     return  self.config["VaultId"]
 
+class BlockIds:
+  def __init__(self):
+    self.blockIds = list()
+  
+  ''' 
+    Read Block ids from string to a list.
+  '''
+  def Read(self, stringdata, removes, splitter):
+    for i in range(0, len(removes)):
+      stringdata = stringdata.replace(removes[i], "")
+    if stringdata:
+      self.blockIds = stringdata.split(splitter)
+      
+
+
+
 '''
 class Blocks:
+  A list of blocks. 
 '''
 class Blocks:
   def __init__(self):
     self.blocks = list()
-
-  def Read(self, stringdata, removes, splitter):
-    for i in range(0, len(removes)):
-      stringdata = stringdata.replace(removes[i], "")
-    self.blocks = stringdata.split(splitter)
-    print(self.blocks)
-      
 
   def Insert(self, blockId, blocksize, fileoffset):
     self.blocks.append((blockId, blocksize, fileoffset))
@@ -120,6 +130,7 @@ class FileBlocks:
     RabinFile 
   '''
   def RabinFile(self):
+    print('\tDivid File to Blocks...')
     total_bytes_in_blocks = 0
     min_block_size = 50 * 1024
     fingerprint = RabinFingerprint(0x39392FAAAAAAAE)
@@ -159,6 +170,7 @@ class FileBlocks:
     UploadFileManifest
   '''
   def UploadFileManifest(self):
+    print('\tUpload File Manifest...')
     global file_url
     if file_url == '':
       # Create a file
@@ -172,7 +184,7 @@ class FileBlocks:
     data = backup_blocks.DecodeBlocks()
     response = requests.post(file_url, params=params, data=data, headers=hdrs)
 
-    missing_blocks = Blocks()
+    missing_blocks = BlockIds()
     missing_blocks.Read(response.text, "[]\" ", ',')
     return missing_blocks
 
@@ -181,11 +193,12 @@ class FileBlocks:
     UploadBlock 
   '''
   def UploadBlocks(self, missing_blocks):
+    print('\tUpload Blocks...')
     global backup_blocks
     blocks_url = self.config.GetApiHost() + '/v1.0/' + self.config.GetVaultId() + '/blocks'  
     hdrs = {'content-type': 'application/octet-stream'}
     params = {}
-    for block_id in missing_blocks.blocks:
+    for block_id in missing_blocks.blockIds:
       url = blocks_url + '/' + block_id
       block = backup_blocks.FindBlock(block_id)
       block = block[0]
@@ -194,7 +207,7 @@ class FileBlocks:
         self.fd.seek(block[2], os.SEEK_SET)
       data = self.fd.read(block[1])
       response = requests.put(url, params=params, data=data, headers=hdrs)
-      print (response.status_code)
+      print ("\t\tResp : %d" %response.status_code)
 
 
 
@@ -242,12 +255,15 @@ def main():
     config = Configuration(sys.argv[1])
 
     # Back up the File.
+    print('Backup File '+sys.argv[2])
     backup = FileBlocks(sys.argv[2])
     backup.Run()
 
     # Restorethe File.
     #restore = Restore(sys.argv[2]+".restore")
     #restore.Run()
+
+    print ('[DONE]')
   except Exception, e:
     print ("Exception: ", e)
   
