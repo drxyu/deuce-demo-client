@@ -230,13 +230,13 @@ class Restore:
   global file_url
 
   def __init__(self, restore_filename):
-    self.fd = io.open(restore_filename, 'w+')
+    self.fd = io.open(restore_filename, 'wb+')
 
 
   def Run(self):
     global file_url
-    print ("YUDEBUG: file_url:"+file_url)
-    response = requests.get(url, stream=True)
+    print ("\tTo Download the file from : "+file_url)
+    response = requests.get(file_url, stream=True)
     if response.status_code == 200:
       for chunk in response.iter_content():
         self.fd.write(chunk)
@@ -276,14 +276,22 @@ def main():
     print ("\tcmd: "+cmd)
     retval = commands.getoutput(cmd)
     cmd = 'diff ./file_from_storage '+sys.argv[2]
-    print ("\tcmd: "+cmd)
+    print ("\n\tcmd: "+cmd)
     retval = commands.getoutput(cmd)
     print ('\t\tcmd returns : ' + retval) 
     
 
     # Restorethe File.
-    #restore = Restore(sys.argv[2]+".restore")
-    #restore.Run()
+    print ('\nRestore the file to : '+ sys.argv[2]+".restore")
+    restore = Restore(sys.argv[2]+".restore")
+    restore.Run()
+
+    # Demo verification.
+    cmd = 'diff '+sys.argv[2] + ' ' + sys.argv[2]+'.restore'
+    print ("\n\tcmd: "+cmd)
+    retval = commands.getoutput(cmd)
+    print ('\t\tcmd returns : ' + retval) 
+    
 
     print ('[DONE]')
   except Exception, e:
