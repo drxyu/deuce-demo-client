@@ -130,7 +130,7 @@ class FileBlocks:
     RabinFile 
   '''
   def RabinFile(self):
-    print('\tDivid File to Blocks...')
+    print('\tDivide File to Blocks...')
     total_bytes_in_blocks = 0
     min_block_size = 50 * 1024
     fingerprint = RabinFingerprint(0x39392FAAAAAAAE)
@@ -216,12 +216,10 @@ class Restore:
   global file_url
 
   def __init__(self, restore_filename):
-    if not os.path.exists(restore_filename):
-      raise IOError('File {} does not exist.'.format(restore_filename))
     self.fd = io.open(restore_filename, 'w+')
 
 
-  def Run():
+  def Run(self):
     global file_url
     print ("YUDEBUG: file_url:"+file_url)
     response = requests.get(url, stream=True)
@@ -229,7 +227,6 @@ class Restore:
       for chunk in response.iter_content():
         self.fd.write(chunk)
     return True
-
 
 
   def __del__(self):
