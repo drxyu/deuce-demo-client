@@ -12,6 +12,8 @@ from __future__ import print_function
 import json
 import sys
 import requests
+import subprocess
+import commands
 import os
 import io
 import hashlib
@@ -28,6 +30,9 @@ from rabin import RabinFingerprint
 #    """
 #    return data.decode('utf8')
 
+      
+file_url = ''
+verify_list = ''
 
 '''
 class Configuration:
@@ -78,6 +83,8 @@ class Blocks:
     for block in self.blocks:
       data['blocks'].append(dict(zip(names, block)))
 
+    self.DumpId() #For demo verification.
+
     return json.dumps(data)
 
   def FindBlock(self, blockId):
@@ -89,9 +96,13 @@ class Blocks:
     for block in self.blocks:
       print (block[0], repr(block[1]).rjust(10), repr(block[2]).rjust(12))
       
-backup_blocks = Blocks()  
-file_url = ''
+  #YUDEBUG
+  def DumpId(self):
+    global verify_list
+    verify_list = ' /tmp/block_storage/' + ' /tmp/block_storage/'.join([block[0] for block in self.blocks])
 
+
+backup_blocks = Blocks()  
 
 class FileBlocks:
   global backup_blocks
@@ -130,7 +141,7 @@ class FileBlocks:
     RabinFile 
   '''
   def RabinFile(self):
-    print('\tDivide File to Blocks...')
+    print('\n\tDivide File to Blocks...')
     total_bytes_in_blocks = 0
     min_block_size = 50 * 1024
     fingerprint = RabinFingerprint(0x39392FAAAAAAAE)
@@ -170,7 +181,7 @@ class FileBlocks:
     UploadFileManifest
   '''
   def UploadFileManifest(self):
-    print('\tUpload File Manifest...')
+    print('\n\tUpload File Manifest...')
     global file_url
     if file_url == '':
       # Create a file
@@ -184,6 +195,8 @@ class FileBlocks:
     data = backup_blocks.DecodeBlocks()
     response = requests.post(file_url, params=params, data=data, headers=hdrs)
 
+    print ("\t\tResp.text (Server needs these blocks) : " +response.text)
+
     missing_blocks = BlockIds()
     missing_blocks.Read(response.text, "[]\" ", ',')
     return missing_blocks
@@ -193,7 +206,7 @@ class FileBlocks:
     UploadBlock 
   '''
   def UploadBlocks(self, missing_blocks):
-    print('\tUpload Blocks...')
+    print('\n\tUpload Blocks...')
     global backup_blocks
     blocks_url = self.config.GetApiHost() + '/v1.0/' + self.config.GetVaultId() + '/blocks'  
     hdrs = {'content-type': 'application/octet-stream'}
@@ -207,6 +220,7 @@ class FileBlocks:
         self.fd.seek(block[2], os.SEEK_SET)
       data = self.fd.read(block[1])
       response = requests.put(url, params=params, data=data, headers=hdrs)
+      print ("\tBlock : " + block_id)
       print ("\t\tResp : %d" %response.status_code)
 
 
@@ -255,6 +269,17 @@ def main():
     print('Backup File '+sys.argv[2])
     backup = FileBlocks(sys.argv[2])
     backup.Run()
+    
+    # Demo verification.
+    cmd = 'cat' + verify_list + '> ./file_from_storage'
+    print ("\nVerify the uploaded file.")
+    print ("\tcmd: "+cmd)
+    retval = commands.getoutput(cmd)
+    cmd = 'diff ./file_from_storage '+sys.argv[2]
+    print ("\tcmd: "+cmd)
+    retval = commands.getoutput(cmd)
+    print ('\t\tcmd returns : ' + retval) 
+    
 
     # Restorethe File.
     #restore = Restore(sys.argv[2]+".restore")
