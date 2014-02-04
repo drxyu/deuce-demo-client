@@ -17,6 +17,7 @@ import commands
 import os
 import io
 import hashlib
+import urllib
 from rabin import RabinFingerprint
 
 
@@ -230,24 +231,14 @@ class Restore:
   global file_url
 
   def __init__(self, restore_filename):
-    self.fd = io.open(restore_filename, 'wb+')
+    self.filename = restore_filename
 
 
   def Run(self):
     global file_url
     print ("\tTo Download the file from : "+file_url)
-    response = requests.get(file_url, stream=True)
-    if response.status_code == 200:
-      for chunk in response.iter_content():
-        self.fd.write(chunk)
-    return True
 
-
-  def __del__(self):
-    try:
-      self.fd.close()
-    except Exception, e:
-      pass
+    urllib.urlretrieve(file_url, self.filename)
 
 
 """
